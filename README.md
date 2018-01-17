@@ -35,3 +35,36 @@
                 });
 
     }
+# Presenter   
+
+    public void getCatByLinNet(Map<String, String> map) {
+        if (!isViewAttached()) {
+            return;
+        }
+        if (!isHaveNet()) {
+            return;
+        }
+        getView().showLoading();
+        addSubscription(RxNet.request(ApiManager.getClient().getCat(map), new RxNetCallBack<List<CatBean>>() {
+            @Override
+            public void onSuccess(List<CatBean> data) {
+                if (isViewAttached()) {
+                    getView().hideLoading();
+                    getView().showToast("获取列表成功");
+                }
+
+            }
+
+            @Override
+            public void onFailure(String msg) {
+                handleFailed(msg, true);
+            }
+        }));
+    }
+
+
+    
+    
+    
+    
+    
