@@ -22,13 +22,14 @@ public class MainPresenter extends BasePresenter<MainView> {
         if (!isHaveNet()) {
             return;
         }
+
         getView().showLoading();
-        addSubscription(RxNet.request(ApiManager.getClient().getCat(map), new RxNetCallBack<List<CatBean>>() {
+        addSubscription(RxNet.request(ApiManager.getInstance().getCat(map), new RxNetCallBack<List<CatBean>>() {
             @Override
             public void onSuccess(List<CatBean> data) {
                 if (isViewAttached()) {
                     getView().hideLoading();
-                    getView().showToast("获取列表成功");
+                    getView().showToast("获取列表成功"+data.get(0).toString());
                 }
 
             }

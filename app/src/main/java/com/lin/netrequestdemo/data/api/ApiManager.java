@@ -15,19 +15,32 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiManager {
 
-    private static MallApi mallApi;
+    private Retrofit client;
 
-    public static MallApi getClient() {
-        if (mallApi == null) {
-            Retrofit client = new Retrofit.Builder()
-                    .baseUrl(AppConstants.Base_Url_Test)
-                    .client(initClient())
-                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-            mallApi = client.create(MallApi.class);
+    private ApiManager() {
+        client = new Retrofit.Builder()
+                .baseUrl(AppConstants.Base_Url_Test)
+                .client(initClient())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+    }
+
+    private static volatile MallApi INSTANCE;
+
+    public static MallApi getInstance() {
+        if (INSTANCE == null) {
+            synchronized (ApiManager.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new ApiManager().getMallApi();
+                }
+            }
         }
-        return mallApi;
+        return INSTANCE;
+    }
+
+    private MallApi getMallApi() {
+        return client.create(MallApi.class);
     }
 
     private static OkHttpClient initClient() {
