@@ -2,69 +2,73 @@
 # 统一网络请求
 
  
-    public static <T> Subscription request(Observable<BaseResponse<T>> observable, final RxNetCallBack<T> callBack) {
-        return observable
-                .subscribeOn(Schedulers.io())
+  public class RxNet {
+    /**
+     * 统一处理单个请求
+     *
+     * @param observable
+     * @param callBack
+     * @param <T>
+     */
+    public static <T> Disposable request(Observable<BaseResponse<T>> observable, final RxNetCallBack<T> callBack) {
+        return observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .onErrorReturn(new Func1<Throwable, BaseResponse<T>>() {
+                .onErrorReturn(new Function<Throwable, BaseResponse<T>>() {
                     @Override
-                    public BaseResponse<T> call(Throwable throwable) {
+                    public BaseResponse<T> apply(Throwable throwable) {
+                        Log.v("LinNetError", throwable.getMessage());
                         callBack.onFailure(ExceptionHandle.handleException(throwable));
                         return null;
                     }
                 })
-                .subscribe(new Subscriber<BaseResponse<T>>() {
+                .subscribe(new Consumer<BaseResponse<T>>() {
                     @Override
-                    public void onCompleted() {
+                    public void accept(BaseResponse<T> tBaseResponse) {
+                        if (tBaseResponse.getCode().equals("200")) {
+                            callBack.onSuccess(tBaseResponse.getData());
 
+                        } else {
+                            callBack.onFailure(tBaseResponse.getMsg());
+                        }
                     }
-
+                }, new Consumer<Throwable>() {
                     @Override
-                    public void onError(Throwable e) {
-
+                    public void accept(Throwable throwable) {
+                        Log.v("LinNetError", "单个请求的错误" + throwable.getMessage());
                     }
+                });
+    }
 
+    /**
+     * 统一处理单个请求
+     * 返回数据没有body
+     */
+    public static Disposable requestWithoutBody(Observable<BaseResponse> observable,
+                                                final RxNetCallBack<String> callBack) {
+        return observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .onErrorReturn(new Function<Throwable, BaseResponse>() {
                     @Override
-                    public void onNext(BaseResponse<T> baseResponse) {
+                    public BaseResponse apply(Throwable throwable) {
+                        Log.v("LinNetError", throwable.getMessage());
+                        callBack.onFailure(ExceptionHandle.handleException(throwable));
+                        return null;
+                    }
+                })
+                .subscribe(new Consumer<BaseResponse>() {
+                    @Override
+                    public void accept(BaseResponse baseResponse) {
                         if (baseResponse.getCode().equals("200")) {
-                            callBack.onSuccess(baseResponse.getData());
+                            callBack.onSuccess(baseResponse.getMsg());
                         } else {
                             callBack.onFailure(baseResponse.getMsg());
                         }
                     }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) {
+                        Log.v("LinNetError", "单个请求的错误:没有body" + throwable.getMessage());
+                    }
                 });
 
     }
-# Presenter   
-
-    public void getCatByLinNet(Map<String, String> map) {
-        if (!isViewAttached()) {
-            return;
-        }
-        if (!isHaveNet()) {
-            return;
-        }
-        getView().showLoading();
-        addSubscription(RxNet.request(ApiManager.getClient().getCat(map), new RxNetCallBack<List<CatBean>>() {
-            @Override
-            public void onSuccess(List<CatBean> data) {
-                if (isViewAttached()) {
-                    getView().hideLoading();
-                    getView().showToast("获取列表成功");
-                }
-
-            }
-
-            @Override
-            public void onFailure(String msg) {
-                handleFailed(msg, true);
-            }
-        }));
-    }
-
-
-    
-    
-    
-    
-    
