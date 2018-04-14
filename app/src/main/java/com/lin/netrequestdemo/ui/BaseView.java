@@ -25,10 +25,6 @@ public interface BaseView {
      */
     void showToast(String msg);
     /**
-     * 显示请求错误提示
-     */
-    void showErr();
-    /**
      * 获取上下文
      * @return 上下文
      */

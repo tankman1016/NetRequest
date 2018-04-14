@@ -20,24 +20,24 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (isHaveNet()) {
-            showLoading();
-            Map<String, String> map = new ArrayMap<>();
-            map.put("action", "pricetrend");
-            addSubscription(RxNet.request(ApiManager.getInstance().getCat(map), new RxNetCallBack<List<CatBean>>() {
-                @Override
-                public void onSuccess(List<CatBean> data) {
-                    hideLoading();
-                    showToast("获取列表成功" + data.get(0).toString());
-                }
 
-                @Override
-                public void onFailure(String msg) {
-                    hideLoading();
-                    showToast(msg);
-                }
-            }));
-        }
+        showLoading();
+        Map<String, String> map = new ArrayMap<>();
+        map.put("action", "pricetrend");
+        addCompositeDisposable(RxNet.request(ApiManager.getInstance().getCat(map), new RxNetCallBack<List<CatBean>>() {
+            @Override
+            public void onSuccess(List<CatBean> data) {
+                hideLoading();
+                showToast("获取列表成功" + data.get(0).toString());
+            }
+
+            @Override
+            public void onFailure(String msg) {
+                hideLoading();
+                showToast(msg);
+            }
+        }));
+
     }
 
 }

@@ -10,8 +10,8 @@ import android.widget.Toast;
 import com.lin.netrequestdemo.AppInit;
 import com.lin.netrequestdemo.util.NetWorkUtils;
 
-import rx.Subscription;
-import rx.subscriptions.CompositeSubscription;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 
 
 public class BaseActivity extends AppCompatActivity implements BaseView {
@@ -20,7 +20,7 @@ public class BaseActivity extends AppCompatActivity implements BaseView {
     /**
      * 处理RxJava订阅和取消订阅
      */
-    public CompositeSubscription mCompositeSubscription;
+    private CompositeDisposable mCompositeDisposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,31 +44,19 @@ public class BaseActivity extends AppCompatActivity implements BaseView {
         return true;
     }
 
-    /**
-     * 添加订阅
-     */
-    public void addSubscription(Subscription subscription) {
-        Log.v("Lin2", "添加订阅");
-        if (mCompositeSubscription == null) {
-            mCompositeSubscription = new CompositeSubscription();
+    public void addCompositeDisposable(Disposable disposable) {
+        if (mCompositeDisposable == null) {
+            mCompositeDisposable = new CompositeDisposable();
         }
-        mCompositeSubscription.add(subscription);
-    }
-
-    /**
-     * 取消订阅
-     */
-    private void unsubscribe() {
-        Log.v("Lin2", "取消订阅");
-        if (mCompositeSubscription != null) {
-            mCompositeSubscription.unsubscribe();
-        }
+        mCompositeDisposable.add(disposable);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unsubscribe();
+        if (mCompositeDisposable != null) {
+            mCompositeDisposable.clear();
+        }
     }
 
     @Override
@@ -97,11 +85,6 @@ public class BaseActivity extends AppCompatActivity implements BaseView {
     @Override
     public void showToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void showErr() {
-        Toast.makeText(this, "出错了..", Toast.LENGTH_SHORT).show();
     }
 
     @Override
