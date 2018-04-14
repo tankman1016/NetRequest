@@ -4,44 +4,40 @@ import android.os.Bundle;
 import android.support.v4.util.ArrayMap;
 
 import com.lin.netrequestdemo.R;
-import com.lin.netrequestdemo.data.entity.CatResult;
-import com.lin.netrequestdemo.presenter.MainPresenter;
+import com.lin.netrequestdemo.data.RxNet;
+import com.lin.netrequestdemo.data.RxNetCallBack;
+import com.lin.netrequestdemo.data.api.ApiManager;
+import com.lin.netrequestdemo.data.entity.CatBean;
 import com.lin.netrequestdemo.ui.BaseActivity;
-import com.lin.netrequestdemo.ui.view.MainView;
 
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends BaseActivity implements MainView {
-    MainPresenter presenter;
+public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        presenter = new MainPresenter();
-        presenter.attachView(this);
-        Map<String, String> map = new ArrayMap<>();
-        map.put("action", "pricetrend");
-        presenter.getCatByLinNet(map);
+        if (isHaveNet()) {
+            showLoading();
+            Map<String, String> map = new ArrayMap<>();
+            map.put("action", "pricetrend");
+            addSubscription(RxNet.request(ApiManager.getInstance().getCat(map), new RxNetCallBack<List<CatBean>>() {
+                @Override
+                public void onSuccess(List<CatBean> data) {
+                    hideLoading();
+                    showToast("获取列表成功" + data.get(0).toString());
+                }
+
+                @Override
+                public void onFailure(String msg) {
+                    hideLoading();
+                    showToast(msg);
+                }
+            }));
+        }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        presenter.unsubscribe();
-        presenter.detachView();
-    }
-
-    @Override
-    public void getNewsSuccess() {
-
-    }
-
-    @Override
-    public void getCatsSuccess(List<CatResult.DataBean> dataList) {
-        //在这里处理list 不用管怎么获取的 —_— mvp
-
-    }
 }

@@ -1,4 +1,4 @@
-package com.lin.netrequestdemo.ui.view;
+package com.lin.netrequestdemo.ui;
 
 import android.content.Context;
 

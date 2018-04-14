@@ -4,13 +4,23 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
-import com.lin.netrequestdemo.ui.view.BaseView;
+import com.lin.netrequestdemo.AppInit;
+import com.lin.netrequestdemo.util.NetWorkUtils;
+
+import rx.Subscription;
+import rx.subscriptions.CompositeSubscription;
 
 
-public class BaseActivity extends AppCompatActivity implements BaseView{
+public class BaseActivity extends AppCompatActivity implements BaseView {
+
     private ProgressDialog mProgressDialog;
+    /**
+     * 处理RxJava订阅和取消订阅
+     */
+    public CompositeSubscription mCompositeSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +30,46 @@ public class BaseActivity extends AppCompatActivity implements BaseView{
 
     }
 
+    public boolean isHaveNet() {
+
+        if (!NetWorkUtils.isConnected(AppInit.getContextObject())) {
+            showToast("网络未连接");
+            return false;
+        }
+
+        if (!NetWorkUtils.isAvailable(AppInit.getContextObject())) {
+            showToast("网络不可用");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 添加订阅
+     */
+    public void addSubscription(Subscription subscription) {
+        Log.v("Lin2", "添加订阅");
+        if (mCompositeSubscription == null) {
+            mCompositeSubscription = new CompositeSubscription();
+        }
+        mCompositeSubscription.add(subscription);
+    }
+
+    /**
+     * 取消订阅
+     */
+    private void unsubscribe() {
+        Log.v("Lin2", "取消订阅");
+        if (mCompositeSubscription != null) {
+            mCompositeSubscription.unsubscribe();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unsubscribe();
+    }
 
     @Override
     public void showLoading() {
@@ -46,7 +96,7 @@ public class BaseActivity extends AppCompatActivity implements BaseView{
 
     @Override
     public void showToast(String msg) {
-        Toast.makeText(this,msg,Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     @Override
