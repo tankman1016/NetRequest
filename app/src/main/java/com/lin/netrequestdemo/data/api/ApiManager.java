@@ -1,8 +1,7 @@
 package com.lin.netrequestdemo.data.api;
 
-import android.util.Log;
-
 import com.lin.netrequestdemo.data.AppConstants;
+import com.lin.netrequestdemo.util.AppLogUtil;
 
 import java.util.concurrent.TimeUnit;
 
@@ -26,21 +25,21 @@ public class ApiManager {
                 .build();
     }
 
-    private static volatile MallApi INSTANCE;
+    private static volatile AppApi INSTANCE;
 
-    public static MallApi getInstance() {
+    public static AppApi getInstance() {
         if (INSTANCE == null) {
             synchronized (ApiManager.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new ApiManager().getMallApi();
+                    INSTANCE = new ApiManager().getAppApi();
                 }
             }
         }
         return INSTANCE;
     }
 
-    private MallApi getMallApi() {
-        return client.create(MallApi.class);
+    private AppApi getAppApi() {
+        return client.create(AppApi.class);
     }
 
     private static OkHttpClient initClient() {
@@ -49,13 +48,15 @@ public class ApiManager {
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
             public void log(String message) {
-                Log.v("LinNet", message);
+                AppLogUtil.printE(message);
             }
         });
         //设定日志级别
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         //延时
         builder.addInterceptor(httpLoggingInterceptor)
+                //设置参数加密
+                //.addInterceptor(new EncryptParamInterceptor())
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS);

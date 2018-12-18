@@ -20,11 +20,10 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         showLoading();
         Map<String, String> map = new ArrayMap<>();
         map.put("action", "pricetrend");
-        addCompositeDisposable(RxNet.request(ApiManager.getInstance().getCat(map), new RxNetCallBack<List<CatBean>>() {
+        addDispose(RxNet.request(ApiManager.getInstance().getCat(map), new RxNetCallBack<List<CatBean>>() {
             @Override
             public void onSuccess(List<CatBean> data) {
                 hideLoading();

@@ -17,7 +17,7 @@ import retrofit2.http.QueryMap;
  *
  */
 
-public interface MallApi {
+public interface AppApi {
 
     /**
      * 获取分类数据

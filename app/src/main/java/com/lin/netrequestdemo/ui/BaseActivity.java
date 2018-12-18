@@ -1,26 +1,22 @@
 package com.lin.netrequestdemo.ui;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.lin.netrequestdemo.AppInit;
-import com.lin.netrequestdemo.util.NetWorkUtils;
+import com.lin.netrequestdemo.data.RxDisposeManager;
 
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
 
+@SuppressLint("Registered")
 public class BaseActivity extends AppCompatActivity implements BaseView {
 
     private ProgressDialog mProgressDialog;
-    /**
-     * 处理RxJava订阅和取消订阅
-     */
-    private CompositeDisposable mCompositeDisposable;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,34 +26,19 @@ public class BaseActivity extends AppCompatActivity implements BaseView {
 
     }
 
-    public boolean isHaveNet() {
-
-        if (!NetWorkUtils.isConnected(AppInit.getContextObject())) {
-            showToast("网络未连接");
-            return false;
-        }
-
-        if (!NetWorkUtils.isAvailable(AppInit.getContextObject())) {
-            showToast("网络不可用");
-            return false;
-        }
-        return true;
-    }
-
-    public void addCompositeDisposable(Disposable disposable) {
-        if (mCompositeDisposable == null) {
-            mCompositeDisposable = new CompositeDisposable();
-        }
-        mCompositeDisposable.add(disposable);
+    //添加当前类名(lin.frameapp.xxx)的dispose
+    public void addDispose(Disposable disposable) {
+        RxDisposeManager.get().add(getClass().getName(), disposable);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mCompositeDisposable != null) {
-            mCompositeDisposable.clear();
-        }
+        //移除dispose
+        RxDisposeManager.get().cancel(getClass().getName());
     }
+
+
 
     @Override
     public void showLoading() {
